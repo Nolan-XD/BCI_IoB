@@ -63,6 +63,13 @@ docker-compose up -d
 - `.env`、`backend/config.py` 等敏感配置文件已被 `.gitignore` 忽略，请勿上传。
 - 推荐仅上传 `.env.example`、`config.example.py` 作为模板。
 - 如需生产环境部署，请自行加强安全性。
+- 上传github
+- git add .
+- git commit -m "---"
+- git pull github main --allow-unrelated-histories
+- git push github main
+
+
 
 ---
 

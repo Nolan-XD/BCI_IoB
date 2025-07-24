@@ -2,7 +2,7 @@
 Author: Nolan-XD haopengliuu@163.com
 Date: 2025-07-23 14:49:18
 LastEditors: Nolan-XD haopengliuu@163.com
-LastEditTime: 2025-07-23 16:51:55
+LastEditTime: 2025-07-24 16:46:53
 FilePath: \BCI_IoB\test\BCI-IoB-test\test_mqtt.py
 Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 '''
@@ -13,7 +13,7 @@ import time
 # MQTT 配置
 MQTT_BROKER = "localhost"  # 或者容器名 emqx，如果你在 Docker 内部运行
 MQTT_PORT = 1883
-MQTT_TOPIC = "sensors/dht11"
+MQTT_TOPIC = "bci-iob-imu"
 MQTT_USERNAME = "admin"
 MQTT_PASSWORD = "pdd123456"
 

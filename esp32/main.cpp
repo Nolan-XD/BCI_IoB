@@ -13,7 +13,7 @@ const char* mqtt_server = "192.168.163.155";  // 例如：192.168.1.100
 const int mqtt_port = 1883;
 const char* mqtt_user = "admin";
 const char* mqtt_password = "pdd123456";
-const char* mqtt_topic = "sensors/dht11";
+const char* mqtt_topic = "bci-iob-imu";
 
 // LED 引脚
 #define LED_PIN 2

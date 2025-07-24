@@ -59,7 +59,7 @@ def handle_disconnect():
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("✅ MQTT Connected!")
-        result, mid = client.subscribe("sensors/dht11")
+        result, mid = client.subscribe("bci-iob-imu")
         print(f"🔗 订阅状态: {result}, 消息 ID: {mid}")
         logger.info(f"🔗 订阅状态: {result}, 消息 ID: {mid}")
     else:
