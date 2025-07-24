@@ -5,15 +5,18 @@
 #include <WiFiClientSecure.h>
 
 // WiFi 配置
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "nolanphone";
+const char* password = "nolan123";
 
 // MQTT 配置
-const char* mqtt_server = "YOUR_MQTT_SERVER";  // 例如：192.168.1.100
+const char* mqtt_server = "192.168.163.155";  // 例如：192.168.1.100
 const int mqtt_port = 1883;
-const char* mqtt_user = "<your_emqx_user>";
-const char* mqtt_password = "public";
+const char* mqtt_user = "admin";
+const char* mqtt_password = "pdd123456";
 const char* mqtt_topic = "sensors/dht11";
+
+// LED 引脚
+#define LED_PIN 2
 
 // DHT11 配置
 #define DHTPIN 4
@@ -21,7 +24,7 @@ const char* mqtt_topic = "sensors/dht11";
 DHT dht(DHTPIN, DHTTYPE);
 
 // 设备ID
-const char* device_id = "ESP32S3_001";
+const char* device_id = "ESP32_master";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -61,7 +64,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void reconnect() {
   while (!client.connected()) {
     Serial.print("尝试MQTT连接...");
-    String clientId = "ESP32S3Client-";
+    String clientId = "ESP32-master-Client-";
     clientId += String(random(0xffff), HEX);
 
     if (client.connect(clientId.c_str(), mqtt_user, mqtt_password)) {
@@ -82,7 +85,10 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
   
-  dht.begin();
+  // dht.begin();
+    // 读取传感器数据
+  float temp = 25;
+  float humi = 10;
 }
 
 void loop() {
@@ -92,15 +98,15 @@ void loop() {
   client.loop();
 
   // 读取传感器数据
-  float temp = dht.readTemperature();
-  float humi = dht.readHumidity();
+  temp ++;
+  humi ++;
 
-  // 检查是否读取成功
-  if (isnan(temp) || isnan(humi)) {
-    Serial.println("从DHT11传感器读取失败!");
-    delay(2000);
-    return;
-  }
+  // // 检查是否读取成功
+  // if (isnan(temp) || isnan(humi)) {
+  //   Serial.println("从DHT11传感器读取失败!");
+  //   delay(2000);
+  //   return;
+  // }
 
   // 创建JSON数据
   StaticJsonDocument<200> doc;

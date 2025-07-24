@@ -1,40 +1,33 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <WiFiClientSecure.h>
 
-#define LED_PIN 2
-
-
-// WiFi信息
+// WiFi 配置
 const char* ssid = "nolanphone";
 const char* password = "nolan123";
 
-// MQTT服务器
-const char* mqtt_server = "172.16.0.2";
+// MQTT 配置
+const char* mqtt_server = "192.168.163.155";  // 例如：192.168.1.100
+const int mqtt_port = 1883;
+const char* mqtt_user = "admin";
+const char* mqtt_password = "pdd123456";
+const char* mqtt_topic = "sensors/dht11";
+
+// LED 引脚
+#define LED_PIN 2
+
+// 设备ID
+const char* device_id = "ESP32_master";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-const int ledPin = LED_PIN;  // 板载LED，一般GPIO2
-
-unsigned long previousMillis = 0;
-unsigned long interval = 500;  // 默认闪烁间隔500ms
-bool ledState = LOW;
-
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("]: ");
-
-  for (unsigned int i=0; i<length; i++) {
-    Serial.write(payload[i]);
-  }
-  Serial.println();
-}
-
+// 连接WiFi
 void setup_wifi() {
   delay(10);
   Serial.println();
-  Serial.print("Connecting to ");
+  Serial.print("连接到 ");
   Serial.println(ssid);
 
   WiFi.begin(ssid, password);
@@ -45,59 +38,95 @@ void setup_wifi() {
   }
 
   Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
+  Serial.println("WiFi已连接");
+  Serial.println("IP地址: ");
   Serial.println(WiFi.localIP());
 }
 
+// MQTT回调函数
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("收到消息 [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+}
+
+// 重新连接MQTT
 void reconnect() {
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect("esp32Client")) {
-      Serial.println("connected");
-      client.subscribe("inTopic");
-      client.publish("outTopic", "hello world");
+    Serial.print("尝试MQTT连接...");
+    String clientId = "ESP32-master-Client-";
+    clientId += String(random(0xffff), HEX);
+
+    if (client.connect(clientId.c_str(), mqtt_user, mqtt_password)) {
+      Serial.println("已连接");
+      client.subscribe(mqtt_topic);
     } else {
-      Serial.print("failed, rc=");
+      Serial.print("失败, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(" 5秒后重试");
       delay(5000);
     }
   }
 }
+  // 读取传感器数据
+float temp = 25;
+float humi = 10;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
-
   setup_wifi();
-
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
+  
+  // dht.begin();
+  pinMode(LED_PIN, OUTPUT);
+
 }
 
 void loop() {
-  // 根据连接状态设置闪烁间隔
-  if (WiFi.status() != WL_CONNECTED) {
-    interval = 200;  // WiFi未连接快闪
-  } else if (!client.connected()) {
-    interval = 200;  // MQTT未连接快闪
-  } else {
-    interval = 1000; // 全连接成功慢闪
-    client.loop();
-  }
+  //翻转LED
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
 
-  // 处理LED闪烁
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
-    ledState = !ledState;
-    digitalWrite(ledPin, ledState ? HIGH : LOW);
-  }
-
-  // 如果MQTT未连接，尝试重连
-  if (WiFi.status() == WL_CONNECTED && !client.connected()) {
+  if (!client.connected()) {
     reconnect();
   }
-}
+  client.loop();
+
+  // 读取传感器数据
+  temp ++;
+  humi ++;
+
+  // // 检查是否读取成功
+  // if (isnan(temp) || isnan(humi)) {
+  //   Serial.println("从DHT11传感器读取失败!");
+  //   delay(2000);
+  //   return;
+  // }
+
+  // 创建JSON数据
+  StaticJsonDocument<200> doc;
+  doc["temp"] = temp;
+  doc["humi"] = humi;
+  doc["device_id"] = device_id;
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  // 打印JSON字符串
+  Serial.println(jsonString);
+
+  // 发送数据
+  if (client.publish(mqtt_topic, jsonString.c_str())) {
+    Serial.println("数据发送成功");
+  } else {
+    Serial.println("数据发送失败");
+  }
+
+
+  // 等待一段时间再次读取
+  delay(5000);
+} 
