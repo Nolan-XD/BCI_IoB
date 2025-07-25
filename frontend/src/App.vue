@@ -2,7 +2,7 @@
  * @Author: Nolan-XD haopengliuu@163.com
  * @Date: 2025-05-28 02:09:32
  * @LastEditors: Nolan-XD haopengliuu@163.com
- * @LastEditTime: 2025-07-23 16:58:43
+ * @LastEditTime: 2025-07-24 17:30:48
  * @FilePath: \BCI_IoB\iot-platform-demo-main\iot-platform-demo-main\iot-demo-docker\frontend\src\App.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->

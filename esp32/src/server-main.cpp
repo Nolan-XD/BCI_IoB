@@ -1,6 +1,5 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <DHT.h>
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
 
@@ -17,11 +16,6 @@ const char* mqtt_topic = "bci-iob-imu";
 
 // LED 引脚
 #define LED_PIN 2
-
-// DHT11 配置
-#define DHTPIN 4
-#define DHTTYPE DHT11
-DHT dht(DHTPIN, DHTTYPE);
 
 // 设备ID
 const char* device_id = "ESP32_master";
@@ -78,6 +72,9 @@ void reconnect() {
     }
   }
 }
+  // 读取传感器数据
+float temp = 25;
+float humi = 10;
 
 void setup() {
   Serial.begin(115200);
@@ -86,12 +83,14 @@ void setup() {
   client.setCallback(callback);
   
   // dht.begin();
-    // 读取传感器数据
-  float temp = 25;
-  float humi = 10;
+  pinMode(LED_PIN, OUTPUT);
+
 }
 
 void loop() {
+  //翻转LED
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+
   if (!client.connected()) {
     reconnect();
   }
@@ -117,12 +116,16 @@ void loop() {
   String jsonString;
   serializeJson(doc, jsonString);
 
+  // 打印JSON字符串
+  Serial.println(jsonString);
+
   // 发送数据
   if (client.publish(mqtt_topic, jsonString.c_str())) {
     Serial.println("数据发送成功");
   } else {
     Serial.println("数据发送失败");
   }
+
 
   // 等待一段时间再次读取
   delay(5000);
